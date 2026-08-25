@@ -2,12 +2,13 @@
 
 void Game::run() {
     while (m_window.isOpen()) {
+        sf::Time time = m_clock.restart();
         processEvent();
         m_window.clear();
-        for (Soldier& soldier : m_soldiers) {
-            soldier.update();
-            soldier.draw(m_window);
-        }
+        m_homeFarm.update(time.asSeconds());
+        m_awayFarm.update(time.asSeconds());
+        m_homeFarm.draw(m_window);
+        m_awayFarm.draw(m_window);
         m_window.display();
     }
 }
@@ -19,10 +20,10 @@ void Game::processEvent() {
             m_window.close();
         }
         if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Space) {
-                Soldier new_soldier(Soldier::Type::Cow, 1, 10, 30, 0.0, m_height-30);
-                m_soldiers.push_back(new_soldier);
-            }
+            if (event.key.code == sf::Keyboard::Space)
+                m_homeFarm.addSoldier(Soldier::Type::Cow);
+            if (event.key.code == sf::Keyboard::Enter)
+                m_awayFarm.addSoldier(Soldier::Type::Cow);
         }
     }
 }
