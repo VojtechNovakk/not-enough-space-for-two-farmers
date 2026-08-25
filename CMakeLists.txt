@@ -30,4 +30,12 @@ add_executable(farmers
 # Lets you write #include "Game.hpp" instead of "../src/Game.hpp"
 target_include_directories(farmers PRIVATE src)
 
+# Warnings. -Wconversion catches the silent numeric conversions that bit us
+# before (bool passed where an int was expected, double narrowed to float).
+target_compile_options(farmers PRIVATE
+    -Wall
+    -Wextra
+    -Wconversion
+)
+
 target_link_libraries(farmers PRIVATE sfml-graphics sfml-audio)
