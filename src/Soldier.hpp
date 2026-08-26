@@ -9,15 +9,31 @@ public:
         Goat,
         Chicken
     };
+    enum Team {
+        Home,
+        Away
+    };
+    enum State {
+        Walking,
+        Fighting
+    };
 private:
     Type m_type;
-    int m_health;
+    Team m_team;
+    State m_state;
+    float m_health;
     int m_level;
     float m_velocity;
     int m_dir;
+    float m_power;
     sf::RectangleShape m_shape;
 public:
-    Soldier(Type type, int level, float width, float height, int dir, float x, float y);
+    Soldier(Type type, Team team, int level, float width, float height, float x, float y);
     void draw(sf::RenderWindow& window) const;
     void update(float sec);
+    sf::FloatRect getBounds() const { return m_shape.getGlobalBounds(); }
+    Team getTeam() const { return m_team; }
+    float getHealth() const { return m_health; }
+    void setState(State new_state) { m_state = new_state; }
+    void takeDamage(const Soldier& other, float dt) { m_health -= other.m_power * dt; }
 };
