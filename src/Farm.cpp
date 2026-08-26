@@ -1,6 +1,6 @@
 #include "Farm.hpp"
 
-Farm::Farm(bool home, const sf::Vector2u& winSize) : m_home(home), m_level(1), m_health(100), m_money(0), m_shape(sf::Vector2f(SIZE, SIZE)) {
+Farm::Farm(bool home, const sf::Vector2u& winSize) : m_home(home), m_level(1), m_health(MAX_HEALTH), m_money(0), m_shape(sf::Vector2f(SIZE, SIZE)), m_healthBar(SIZE, m_home ? HealthBar::Anchor::Left : HealthBar::Anchor::Right) {
     if (home)
         m_shape.setPosition(0.0f, static_cast<float>(winSize.y) - SIZE);
     else
@@ -15,4 +15,9 @@ Soldier Farm::spawnSoldier(Soldier::Type type) const {
 
 void Farm::draw(sf::RenderWindow& window) const {
     window.draw(m_shape);
+    m_healthBar.draw(window);
+}
+
+void Farm::update(float dt) {
+    m_healthBar.update(m_shape.getPosition(), m_health / MAX_HEALTH);
 }

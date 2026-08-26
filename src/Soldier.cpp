@@ -1,6 +1,7 @@
 #include "Soldier.hpp"
 
-Soldier::Soldier(Type type, Team team, int level, float width, float height, float x, float y) : m_type(type), m_team(team), m_state(Walking), m_health(100.0f), m_level(level), m_dir(team == Team::Home ? 1 : -1), m_shape(sf::Vector2f(width, height)) {
+Soldier::Soldier(Type type, Team team, int level, float width, float height, float x, float y) : m_type(type), m_team(team), m_state(Walking),
+    m_health(MAX_HEALTH), m_level(level), m_dir(team == Team::Home ? 1 : -1), m_shape(sf::Vector2f(width, height)), m_healthBar(width, team == Team::Home ? HealthBar::Anchor::Left : HealthBar::Anchor::Right) {
     switch (m_type) {
         case Cow:
             m_shape.setFillColor(sf::Color::White);
@@ -20,8 +21,15 @@ Soldier::Soldier(Type type, Team team, int level, float width, float height, flo
     }
     m_shape.setPosition(x, y);
 }
-void Soldier::draw(sf::RenderWindow& window) const { window.draw(m_shape); }
+void Soldier::draw(sf::RenderWindow& window) const {
+    window.draw(m_shape);
+    m_healthBar.draw(window);
+}
 void Soldier::update(float sec) {
     if (m_state == State::Walking)
         m_shape.move(sec * m_velocity * static_cast<float>(m_dir), 0.0f);
+    m_healthBar.update(m_shape.getPosition(), m_health/MAX_HEALTH);
+}
+void Soldier::takeDamage(const Soldier& other, float dt) {
+    m_health -= other.m_power * dt;
 }

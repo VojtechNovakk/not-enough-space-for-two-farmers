@@ -10,7 +10,8 @@ void Game::run() {
         processEvent();
         for (Soldier& soldier : m_soldiers)
             soldier.update(dt);
-
+        m_homeFarm.update(dt);
+        m_awayFarm.update(dt);
         handleCollisions(dt);
 
         m_window.clear();

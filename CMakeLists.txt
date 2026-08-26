@@ -25,6 +25,7 @@ add_executable(farmers
     src/Game.cpp
     src/Farm.cpp
     src/Soldier.cpp
+    src/HealthBar.cpp
 )
 
 # Lets you write #include "Game.hpp" instead of "../src/Game.hpp"

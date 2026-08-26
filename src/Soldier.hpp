@@ -1,8 +1,10 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "HealthBar.hpp"
 
 class Soldier {
+    static constexpr float MAX_HEALTH = 100.0f;
 public:
     enum Type {
         Cow,
@@ -27,6 +29,7 @@ private:
     int m_dir;
     float m_power;
     sf::RectangleShape m_shape;
+    HealthBar m_healthBar;
 public:
     Soldier(Type type, Team team, int level, float width, float height, float x, float y);
     void draw(sf::RenderWindow& window) const;
@@ -35,5 +38,5 @@ public:
     Team getTeam() const { return m_team; }
     float getHealth() const { return m_health; }
     void setState(State new_state) { m_state = new_state; }
-    void takeDamage(const Soldier& other, float dt) { m_health -= other.m_power * dt; }
+    void takeDamage(const Soldier& other, float dt);
 };
