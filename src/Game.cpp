@@ -8,48 +8,59 @@ void Game::run() {
         sf::Time time = m_clock.restart();
         float dt = std::min(time.asSeconds(), MAX_DELTA);
         processEvent();
-        for (Soldier& soldier : m_soldiers)
-            soldier.update(dt);
-        m_homeFarm.update(dt);
-        m_awayFarm.update(dt);
-        handleCollisions(dt);
+        for (auto& soldier : m_soldiers)
+            soldier->update(dt);
+        erase_if(m_soldiers, [](const std::shared_ptr<Soldier>& soldier){ return !(soldier->isAlive()); });
+        m_homeFarm->update(dt);
+        m_awayFarm->update(dt);
+        handleCollisions();
 
         m_window.clear();
 
-        m_homeFarm.draw(m_window);
-        m_awayFarm.draw(m_window);
-        for (const Soldier& soldier : m_soldiers)
-            soldier.draw(m_window);
+        m_homeFarm->draw(m_window);
+        m_awayFarm->draw(m_window);
+        for (const auto& soldier : m_soldiers)
+            soldier->draw(m_window);
 
         m_window.display();
     }
 }
 
-void Game::handleCollisions(float dt) {
-    for (size_t i = 0; i < m_soldiers.size(); ++i)
-        m_soldiers[i].setState(Soldier::State::Walking);
-
-    std::vector<std::pair<size_t, size_t>> targets;
+void Game::handleCollisions() const {
     for (size_t i = 0; i < m_soldiers.size(); ++i) {
-        sf::FloatRect curSoldierBounds = m_soldiers[i].getBounds();
+        if (m_soldiers[i]->hasValidTarget())
+            continue;
+        sf::FloatRect curBounds = m_soldiers[i]->getAttackBounds();
+        std::weak_ptr<IDamageable> bestTarget;
+        float targetDis = -1.0f;
         for (size_t j = 0; j < m_soldiers.size(); ++j) {
-            if (m_soldiers[i].getTeam() != m_soldiers[j].getTeam() && curSoldierBounds.intersects(m_soldiers[j].getBounds())) {
-                targets.emplace_back(i, j);
-                break;
+            if (m_soldiers[i]->getTeam() == m_soldiers[j]->getTeam())
+                continue;
+            if (curBounds.intersects(m_soldiers[j]->getBounds())) {
+                if (m_soldiers[i]->getTeam() == Soldier::Team::Home) {
+                    if (targetDis < 0.0f || m_soldiers[j]->getBounds().left < targetDis) {
+                        targetDis = m_soldiers[j]->getBounds().left;
+                        bestTarget = m_soldiers[j];
+                    }
+                }else {
+                    if (targetDis < 0.0f || m_soldiers[j]->getBounds().left > targetDis) {
+                        targetDis = m_soldiers[j]->getBounds().left;
+                        bestTarget = m_soldiers[j];
+                    }
+                }
             }
         }
-        if (m_soldiers[i].getTeam() == Soldier::Team::Home && curSoldierBounds.intersects(m_awayFarm.getBounds()))
-            m_soldiers[i].setState(Soldier::State::Fighting);
-        else if (m_soldiers[i].getTeam() == Soldier::Team::Away && curSoldierBounds.intersects(m_homeFarm.getBounds()))
-            m_soldiers[i].setState(Soldier::State::Fighting);
+        if (bestTarget.expired()) {
+            if (m_soldiers[i]->getTeam() == Soldier::Team::Home) {
+                if (curBounds.intersects(m_awayFarm->getBounds()))
+                    m_soldiers[i]->setTarget(m_awayFarm);
+            }else {
+                if (curBounds.intersects(m_homeFarm->getBounds()))
+                    m_soldiers[i]->setTarget(m_homeFarm);
+            }
+        }else
+            m_soldiers[i]->setTarget(bestTarget);
     }
-    for (size_t i = 0; i < targets.size(); ++i) {
-        m_soldiers[targets[i].first].setState(Soldier::State::Fighting);
-        m_soldiers[targets[i].second].takeDamage(m_soldiers[targets[i].first], dt);
-    }
-    std::erase_if(m_soldiers, [](const Soldier& s) {
-        return s.getHealth() <= 0;
-    });
 }
 
 void Game::processEvent() {
@@ -59,10 +70,18 @@ void Game::processEvent() {
             m_window.close();
         }
         if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Space)
-                m_soldiers.push_back(m_homeFarm.spawnSoldier(Soldier::Type::Cow));
-            if (event.key.code == sf::Keyboard::Enter)
-                m_soldiers.push_back(m_awayFarm.spawnSoldier(Soldier::Type::Cow));
+            if (event.key.code == sf::Keyboard::Q)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Cow)));
+            if (event.key.code == sf::Keyboard::W)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Goat)));
+            if (event.key.code == sf::Keyboard::E)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Chicken)));
+            if (event.key.code == sf::Keyboard::Left)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Cow)));
+            if (event.key.code == sf::Keyboard::Down)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Goat)));
+            if (event.key.code == sf::Keyboard::Right)
+                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Chicken)));
         }
     }
 }

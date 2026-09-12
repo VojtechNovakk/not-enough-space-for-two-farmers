@@ -1,42 +1,73 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.23)
 
-project(farmers LANGUAGES CXX)
-
-# Force out-of-source builds: everything CMake generates must live in build/
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-    message(FATAL_ERROR
-        "In-source builds are not allowed. Run:\n"
-        "  cmake -B build\n"
-        "  cmake --build build")
-endif()
-
-# Put the final binary in build/ itself, not build/<config>/ on multi-config generators
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+project(game-project)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# SFML 2.5 as installed by the system package manager (libsfml-dev).
-# "graphics" pulls in window + system automatically.
-find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
+add_executable(Main)
+add_library(Game)
+add_library(Farm)
+add_library(Soldier)
+add_library(HealthBar)
+add_library(IDamageable INTERFACE)
 
-add_executable(farmers
-    src/main.cpp
-    src/Game.cpp
-    src/Farm.cpp
-    src/Soldier.cpp
-    src/HealthBar.cpp
+find_package(SFML 2 COMPONENTS graphics window system REQUIRED)
+
+target_link_libraries(Main
+    PRIVATE
+        Game Farm Soldier HealthBar IDamageable sfml-graphics sfml-window sfml-system)
+
+target_link_libraries(Farm PUBLIC IDamageable)
+target_link_libraries(Soldier PUBLIC IDamageable)
+
+target_sources(Main
+        PRIVATE
+            src/main.cpp
 )
 
-# Lets you write #include "Game.hpp" instead of "../src/Game.hpp"
-target_include_directories(farmers PRIVATE src)
+target_sources(Game
+        PRIVATE
+            src/Game.cpp
 
-# Warnings. -Wconversion catches the silent numeric conversions that bit us
-# before (bool passed where an int was expected, double narrowed to float).
-target_compile_options(farmers PRIVATE
-    -Wall
-    -Wextra
-    -Wconversion
+        PUBLIC
+            FILE_SET HEADERS
+            BASE_DIRS src
+            FILES src/Game.hpp
 )
 
-target_link_libraries(farmers PRIVATE sfml-graphics sfml-audio)
+target_sources(Farm
+        PRIVATE
+            src/Farm.cpp
+
+        PUBLIC
+            FILE_SET HEADERS
+            BASE_DIRS src
+            FILES src/Farm.hpp
+)
+
+target_sources(Soldier
+        PRIVATE
+            src/Soldier.cpp
+
+        PUBLIC
+            FILE_SET HEADERS
+            BASE_DIRS src
+            FILES src/Soldier.hpp
+)
+
+target_sources(HealthBar
+        PRIVATE
+            src/HealthBar.cpp
+
+        PUBLIC
+            FILE_SET HEADERS
+            BASE_DIRS src
+            FILES src/HealthBar.hpp
+)
+
+target_sources(IDamageable
+    INTERFACE
+        FILE_SET HEADERS
+        BASE_DIRS src
+        FILES src/IDamageable.hpp)
