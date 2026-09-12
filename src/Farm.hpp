@@ -3,12 +3,13 @@
 #include <SFML/Graphics.hpp>
 #include "Soldier.hpp"
 #include "HealthBar.hpp"
+#include "IDamageable.hpp"
 
-class Farm{
+class Farm : public IDamageable{
     static constexpr float SIZE = 50.f;
     static constexpr  float MAX_HEALTH = 100.0f;
 private:
-    bool m_home;
+    Team m_team;
     int m_level;
     float m_health;
     int m_money;
@@ -18,6 +19,11 @@ public:
     Farm(bool home, const sf::Vector2u& winSize);
     void draw(sf::RenderWindow& window) const;
     Soldier spawnSoldier(Soldier::Type type) const;
-    sf::FloatRect getBounds() const { return m_shape.getGlobalBounds(); }
+
+    Team getTeam() const override;
+    sf::FloatRect getBounds() const override { return m_shape.getGlobalBounds(); }
+    void takeDamage(float amount) override;
+    bool isAlive() const override { return m_health > 0.0f; }
+
     void update(float dt);
 };

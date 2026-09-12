@@ -2,23 +2,15 @@
 
 #include <SFML/Graphics.hpp>
 #include "HealthBar.hpp"
+#include "IDamageable.hpp"
+#include <memory>
 
-class Soldier {
+class Soldier : public IDamageable {
     static constexpr float MAX_HEALTH = 100.0f;
+
 public:
-    enum Type {
-        Cow,
-        Goat,
-        Chicken
-    };
-    enum Team {
-        Home,
-        Away
-    };
-    enum State {
-        Walking,
-        Fighting
-    };
+    enum Type { Cow, Goat, Chicken };
+    enum State { Walking, Fighting };
 private:
     Type m_type;
     Team m_team;
@@ -28,15 +20,27 @@ private:
     float m_velocity;
     int m_dir;
     float m_power;
+    float m_attackRange;
     sf::RectangleShape m_shape;
     HealthBar m_healthBar;
+    std::weak_ptr<IDamageable> m_target;
+
 public:
     Soldier(Type type, Team team, int level, float width, float height, float x, float y);
-    void draw(sf::RenderWindow& window) const;
+
+    void draw(sf::RenderWindow &window) const;
     void update(float sec);
+
     sf::FloatRect getBounds() const { return m_shape.getGlobalBounds(); }
+    sf::FloatRect getAttackBounds() const;
     Team getTeam() const { return m_team; }
     float getHealth() const { return m_health; }
-    void setState(State new_state) { m_state = new_state; }
-    void takeDamage(const Soldier& other, float dt);
+
+    void takeDamage(float amount);
+    bool isAlive() const { return m_health > 0.0f; }
+
+    bool hasValidTarget() const;
+    void setTarget(const std::weak_ptr<IDamageable>& target);
+    void clearTarget();
+    void attack(float dt) const;
 };
