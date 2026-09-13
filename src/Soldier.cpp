@@ -6,19 +6,19 @@ Soldier::Soldier(Type type, Team team, int level, float width, float height, flo
         case Cow:
             m_shape.setFillColor(sf::Color::White);
             m_velocity = 60.0f;
-            m_power = 18.0f;
+            m_power = 32.0f;
             m_attackRange = 8.0f;
             break;
         case Goat:
             m_shape.setFillColor(sf::Color::Blue);
             m_velocity = 75.0f;
-            m_power = 13.0f;
+            m_power = 25.0f;
             m_attackRange = 5.0f;
             break;
         case Chicken:
             m_shape.setFillColor(sf::Color::Red);
             m_velocity = 100.0f;
-            m_power = 10.0f;
+            m_power = 17.0f;
             m_attackRange = 3.0f;
             break;
     }

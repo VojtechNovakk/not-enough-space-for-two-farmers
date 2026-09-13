@@ -19,9 +19,9 @@ void Game::run() {
             m_homeFarm->update(dt);
             m_awayFarm->update(dt);
             if (!m_homeFarm->isAlive())
-                endGame(2);
+                endGame(Winner::Away);
             else if (!m_awayFarm->isAlive())
-                endGame(1);
+                endGame(Winner::Home);
             handleCollisions();
 
             m_window.clear();
@@ -31,7 +31,9 @@ void Game::run() {
             for (const auto& soldier : m_soldiers)
                 soldier->draw(m_window);
         }else {
-
+            processEvent();
+            m_window.clear();
+            m_endScreen.draw(m_window);
         }
 
         m_window.display();
@@ -46,9 +48,12 @@ void Game::startGame() {
     m_state = State::Playing;
 }
 
-void Game::endGame(short int winner) {
-    m_winner = winner;
+void Game::endGame(Winner winner) {
     m_state = State::GameOver;
+    if (winner == Winner::Home)
+        m_endScreen.setWinner("Winner is player1!");
+    else if (winner == Winner::Away)
+        m_endScreen.setWinner("Winner is player2!");
 }
 
 void Game::handleCollisions() const {
@@ -113,6 +118,11 @@ void Game::processEvent() {
                     m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Goat)));
                 if (event.key.code == sf::Keyboard::Right)
                     m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Chicken)));
+            }
+        }else {
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::R)
+                    m_state = State::Menu;
             }
         }
     }
