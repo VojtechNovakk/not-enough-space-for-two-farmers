@@ -1,8 +1,6 @@
 #include "Farm.hpp"
 
 #include "IDamageable.hpp"
-#include "IDamageable.hpp"
-#include "IDamageable.hpp"
 
 Farm::Farm(bool home, const sf::Vector2u& winSize) : m_team(home ? Team::Home : Team::Away), m_level(1), m_health(MAX_HEALTH), m_money(0), m_shape(sf::Vector2f(SIZE, SIZE)), m_healthBar(SIZE, m_team == Team::Home ? HealthBar::Anchor::Left : HealthBar::Anchor::Right) {
     if (home)

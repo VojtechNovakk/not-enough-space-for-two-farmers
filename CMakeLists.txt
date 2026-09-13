@@ -11,15 +11,17 @@ add_library(Farm)
 add_library(Soldier)
 add_library(HealthBar)
 add_library(IDamageable INTERFACE)
+add_library(Menu)
 
 find_package(SFML 2 COMPONENTS graphics window system REQUIRED)
 
 target_link_libraries(Main
     PRIVATE
-        Game Farm Soldier HealthBar IDamageable sfml-graphics sfml-window sfml-system)
+        Game Farm Soldier HealthBar IDamageable Menu sfml-graphics sfml-window sfml-system)
 
 target_link_libraries(Farm PUBLIC IDamageable)
 target_link_libraries(Soldier PUBLIC IDamageable)
+target_link_libraries(Game PUBLIC Menu)
 
 target_sources(Main
         PRIVATE
@@ -71,3 +73,12 @@ target_sources(IDamageable
         FILE_SET HEADERS
         BASE_DIRS src
         FILES src/IDamageable.hpp)
+
+target_sources(Menu
+    PRIVATE
+        src/Menu.cpp
+
+    PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS src
+        FILES src/Menu.hpp)

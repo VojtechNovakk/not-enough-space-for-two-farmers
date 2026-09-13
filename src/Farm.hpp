@@ -26,4 +26,5 @@ public:
     bool isAlive() const override { return m_health > 0.0f; }
 
     void update(float dt);
+    void setHealth(float health) { m_health = health; }
 };
