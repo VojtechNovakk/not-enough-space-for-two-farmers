@@ -31,13 +31,13 @@ public:
     void draw(sf::RenderWindow &window) const;
     void update(float sec);
 
-    sf::FloatRect getBounds() const { return m_shape.getGlobalBounds(); }
+    sf::FloatRect getBounds() const override { return m_shape.getGlobalBounds(); }
     sf::FloatRect getAttackBounds() const;
-    Team getTeam() const { return m_team; }
+    Team getTeam() const override { return m_team; }
     float getHealth() const { return m_health; }
 
-    void takeDamage(float amount);
-    bool isAlive() const { return m_health > 0.0f; }
+    void takeDamage(float amount) override;
+    bool isAlive() const override { return m_health > 0.0f; }
 
     bool hasValidTarget() const;
     void setTarget(const std::weak_ptr<IDamageable>& target);

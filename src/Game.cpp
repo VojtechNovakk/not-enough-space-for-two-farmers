@@ -5,25 +5,50 @@ static constexpr float MAX_DELTA = 0.05f;
 
 void Game::run() {
     while (m_window.isOpen()) {
-        sf::Time time = m_clock.restart();
-        float dt = std::min(time.asSeconds(), MAX_DELTA);
-        processEvent();
-        for (auto& soldier : m_soldiers)
-            soldier->update(dt);
-        erase_if(m_soldiers, [](const std::shared_ptr<Soldier>& soldier){ return !(soldier->isAlive()); });
-        m_homeFarm->update(dt);
-        m_awayFarm->update(dt);
-        handleCollisions();
+        if (m_state == State::Menu) {
+            processEvent();
+            m_window.clear();
+            m_menu.draw(m_window);
+        }else if (m_state == State::Playing) {
+            sf::Time time = m_clock.restart();
+            float dt = std::min(time.asSeconds(), MAX_DELTA);
+            processEvent();
+            for (auto& soldier : m_soldiers)
+                soldier->update(dt);
+            erase_if(m_soldiers, [](const std::shared_ptr<Soldier>& soldier){ return !(soldier->isAlive()); });
+            m_homeFarm->update(dt);
+            m_awayFarm->update(dt);
+            if (!m_homeFarm->isAlive())
+                endGame(2);
+            else if (!m_awayFarm->isAlive())
+                endGame(1);
+            handleCollisions();
 
-        m_window.clear();
+            m_window.clear();
 
-        m_homeFarm->draw(m_window);
-        m_awayFarm->draw(m_window);
-        for (const auto& soldier : m_soldiers)
-            soldier->draw(m_window);
+            m_homeFarm->draw(m_window);
+            m_awayFarm->draw(m_window);
+            for (const auto& soldier : m_soldiers)
+                soldier->draw(m_window);
+        }else {
+
+        }
 
         m_window.display();
     }
+}
+
+void Game::startGame() {
+    m_soldiers.clear();
+    m_homeFarm->setHealth(100.0f);
+    m_awayFarm->setHealth(100.0f);
+    m_clock.restart();
+    m_state = State::Playing;
+}
+
+void Game::endGame(short int winner) {
+    m_winner = winner;
+    m_state = State::GameOver;
 }
 
 void Game::handleCollisions() const {
@@ -69,19 +94,26 @@ void Game::processEvent() {
         if (event.type == sf::Event::Closed) {
             m_window.close();
         }
-        if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Q)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Cow)));
-            if (event.key.code == sf::Keyboard::W)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Goat)));
-            if (event.key.code == sf::Keyboard::E)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Chicken)));
-            if (event.key.code == sf::Keyboard::Left)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Cow)));
-            if (event.key.code == sf::Keyboard::Down)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Goat)));
-            if (event.key.code == sf::Keyboard::Right)
-                m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Chicken)));
+        if (m_state == State::Menu) {
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Space)
+                    startGame();
+            }
+        }else if (m_state == State::Playing) {
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Q)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Cow)));
+                if (event.key.code == sf::Keyboard::W)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Goat)));
+                if (event.key.code == sf::Keyboard::E)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Chicken)));
+                if (event.key.code == sf::Keyboard::Left)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Cow)));
+                if (event.key.code == sf::Keyboard::Down)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Goat)));
+                if (event.key.code == sf::Keyboard::Right)
+                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Chicken)));
+            }
         }
     }
 }
