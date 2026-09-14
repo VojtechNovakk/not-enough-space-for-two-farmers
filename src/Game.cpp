@@ -1,7 +1,32 @@
 #include "Game.hpp"
 #include <algorithm>
+#include <SFML/Graphics.hpp>
+#include <stdexcept>
 
 static constexpr float MAX_DELTA = 0.05f;
+
+Game::Game(const int width, const int height, const std::string& title) : m_window(sf::VideoMode(width, height), title), m_font(loadFont("assets/fonts/PressStart2P-Regular.ttf")),
+m_farmTexture(loadTexture("assets/textures/farm.png")), m_menu(m_window.getSize(), m_font), m_endScreen(m_window.getSize(), m_font) {
+    m_homeFarm = std::make_shared<Farm>(true, sf::Vector2u(width, height), m_font, m_farmTexture);
+    m_awayFarm = std::make_shared<Farm>(false, sf::Vector2u(width, height), m_font, m_farmTexture);
+
+    m_bgTexture.loadFromFile("assets/textures/bg.png");
+    m_background.setTexture(m_bgTexture);
+}
+
+sf::Font Game::loadFont(const std::string &path) {
+    sf::Font f;
+    if (!f.loadFromFile(path))
+        throw std::runtime_error("Nepovedlo se načíst font!");
+    return f;
+}
+
+sf::Texture Game::loadTexture(const std::string &path) {
+    sf::Texture t;
+    if (!t.loadFromFile(path))
+        throw std::runtime_error("Nepovedlo se načíst font!");
+    return t;
+}
 
 void Game::run() {
     while (m_window.isOpen()) {
@@ -26,10 +51,11 @@ void Game::run() {
 
             m_window.clear();
 
-            m_homeFarm->draw(m_window);
-            m_awayFarm->draw(m_window);
+            m_window.draw(m_background);
             for (const auto& soldier : m_soldiers)
                 soldier->draw(m_window);
+            m_homeFarm->draw(m_window);
+            m_awayFarm->draw(m_window);
         }else {
             processEvent();
             m_window.clear();
@@ -42,8 +68,8 @@ void Game::run() {
 
 void Game::startGame() {
     m_soldiers.clear();
-    m_homeFarm->setHealth(100.0f);
-    m_awayFarm->setHealth(100.0f);
+    m_homeFarm->reset();
+    m_awayFarm->reset();
     m_clock.restart();
     m_state = State::Playing;
 }
@@ -106,18 +132,30 @@ void Game::processEvent() {
             }
         }else if (m_state == State::Playing) {
             if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Q)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Cow)));
-                if (event.key.code == sf::Keyboard::W)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Goat)));
-                if (event.key.code == sf::Keyboard::E)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_homeFarm->spawnSoldier(Soldier::Type::Chicken)));
-                if (event.key.code == sf::Keyboard::Left)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Cow)));
-                if (event.key.code == sf::Keyboard::Down)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Goat)));
-                if (event.key.code == sf::Keyboard::Right)
-                    m_soldiers.push_back(std::make_shared<Soldier>(m_awayFarm->spawnSoldier(Soldier::Type::Chicken)));
+                if (event.key.code == sf::Keyboard::Q) {
+                    if (std::optional<Soldier> s = m_homeFarm->spawnSoldier(Soldier::Type::Cow))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
+                if (event.key.code == sf::Keyboard::W) {
+                    if (std::optional<Soldier> s = m_homeFarm->spawnSoldier(Soldier::Type::Goat))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
+                if (event.key.code == sf::Keyboard::E) {
+                    if (std::optional<Soldier> s = m_homeFarm->spawnSoldier(Soldier::Type::Chicken))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
+                if (event.key.code == sf::Keyboard::Left) {
+                    if (std::optional<Soldier> s = m_awayFarm->spawnSoldier(Soldier::Type::Cow))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
+                if (event.key.code == sf::Keyboard::Down) {
+                    if (std::optional<Soldier> s = m_awayFarm->spawnSoldier(Soldier::Type::Goat))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
+                if (event.key.code == sf::Keyboard::Right) {
+                    if (std::optional<Soldier> s = m_awayFarm->spawnSoldier(Soldier::Type::Chicken))
+                        m_soldiers.push_back(std::make_shared<Soldier>(std::move(*s)));
+                }
             }
         }else {
             if (event.type == sf::Event::KeyPressed) {

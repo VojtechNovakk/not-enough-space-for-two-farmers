@@ -6,8 +6,6 @@
 #include <memory>
 
 class Soldier : public IDamageable {
-    static constexpr float MAX_HEALTH = 100.0f;
-
 public:
     enum Type { Cow, Goat, Chicken };
     enum State { Walking, Fighting };
@@ -15,6 +13,7 @@ private:
     Type m_type;
     Team m_team;
     State m_state;
+    float m_maxHealth;
     float m_health;
     int m_level;
     float m_velocity;
@@ -43,4 +42,6 @@ public:
     void setTarget(const std::weak_ptr<IDamageable>& target);
     void clearTarget();
     void attack(float dt) const;
+
+    static float soldierPrice(Type soldierType);
 };

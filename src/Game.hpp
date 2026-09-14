@@ -16,6 +16,12 @@ public:
 private:
     sf::RenderWindow m_window;
     sf::Clock m_clock;
+    sf::Font m_font;
+
+    sf::Texture m_bgTexture;
+    sf::Texture m_farmTexture;
+
+    sf::Sprite m_background;
     std::shared_ptr<Farm> m_homeFarm;
     std::shared_ptr<Farm> m_awayFarm;
     std::vector<std::shared_ptr<Soldier>> m_soldiers;
@@ -23,12 +29,13 @@ private:
     Menu m_menu;
     EndScreen m_endScreen;
 
+    static sf::Font loadFont(const std::string& path);
+    static sf::Texture loadTexture(const std::string& path);
     void startGame();
     void endGame(Winner winner);
     void processEvent();
     void handleCollisions() const ;
 public:
-    Game(const int width, const int height, const std::string& title) : m_window(sf::VideoMode(width, height), title), m_homeFarm(std::make_shared<Farm>(true, sf::Vector2u(width, height))),
-    m_awayFarm(std::make_shared<Farm>(false, sf::Vector2u(width, height))), m_menu(m_window.getSize()), m_endScreen(m_window.getSize()) {};
+    Game(const int width, const int height, const std::string& title);
     void run();
 };

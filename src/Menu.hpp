@@ -9,10 +9,9 @@ public:
     static constexpr unsigned int FONT_SIZE = 15;
 private:
     sf::RectangleShape m_button;
-    sf::Font m_font;
     sf::Text m_buttonText;
 public:
-    Menu(const sf::Vector2u& winSize);
+    Menu(const sf::Vector2u& winSize, const sf::Font& font);
 
     void draw(sf::RenderWindow& window) const;
 };

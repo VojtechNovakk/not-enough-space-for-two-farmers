@@ -1,15 +1,11 @@
 #include "EndScreen.hpp"
-#include <stdexcept>
 
-
-EndScreen::EndScreen(const sf::Vector2u& winSize) {
-    if (!m_font.loadFromFile("assets/fonts/PressStart2P-Regular.ttf"))
-        throw std::runtime_error("Chyba načtení fontu!");
-    m_winnerText.setFont(m_font);
+EndScreen::EndScreen(const sf::Vector2u& winSize, const sf::Font& font){
+    m_winnerText.setFont(font);
     m_winnerText.setFillColor(sf::Color::White);
     m_winnerText.setCharacterSize(FONT_SIZE_WINNER);
     m_winnerText.setPosition(winSize.x/2.0f, winSize.y/2.0f);
-    m_resetText.setFont(m_font);
+    m_resetText.setFont(font);
     m_resetText.setFillColor(sf::Color::White);
     m_resetText.setCharacterSize(FONT_SIZE_RESET);
     m_resetText.setString("Press R for return to the Menu!");
