@@ -96,3 +96,9 @@ target_sources(EndScreen
         BASE_DIRS src
         FILES src/EndScreen.hpp
 )
+
+add_custom_command(TARGET Main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:Main>/assets)
+
+add_compile_options(-Wall -Wextra -pedantic)

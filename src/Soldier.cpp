@@ -1,27 +1,30 @@
 #include "Soldier.hpp"
 
-Soldier::Soldier(Type type, Team team, int level, float width, float height, float x, float y) : m_type(type), m_team(team), m_state(Walking),
-    m_health(MAX_HEALTH), m_level(level), m_dir(team == Team::Home ? 1 : -1), m_shape(sf::Vector2f(width, height)), m_healthBar(width, team == Team::Home ? HealthBar::Anchor::Left : HealthBar::Anchor::Right) {
+Soldier::Soldier(Type type, Team team, int level, float width, float height, float x, float y) : m_type(type), m_team(team), m_state(Walking), m_level(level), m_dir(team == Team::Home ? 1 : -1), m_shape(sf::Vector2f(width, height)), m_healthBar(width, team == Team::Home ? HealthBar::Anchor::Left : HealthBar::Anchor::Right) {
     switch (m_type) {
         case Cow:
             m_shape.setFillColor(sf::Color::White);
             m_velocity = 60.0f;
-            m_power = 32.0f;
+            m_power = 35.0f;
             m_attackRange = 8.0f;
+            m_maxHealth = 200.0f;
             break;
         case Goat:
             m_shape.setFillColor(sf::Color::Blue);
             m_velocity = 75.0f;
             m_power = 25.0f;
             m_attackRange = 5.0f;
+            m_maxHealth = 100.0f;
             break;
         case Chicken:
             m_shape.setFillColor(sf::Color::Red);
             m_velocity = 100.0f;
             m_power = 17.0f;
-            m_attackRange = 3.0f;
+            m_attackRange = 60.0f;
+            m_maxHealth = 75.0f;
             break;
     }
+    m_health = m_maxHealth;
     m_shape.setPosition(x, y);
 }
 void Soldier::draw(sf::RenderWindow& window) const {
@@ -34,7 +37,7 @@ void Soldier::update(float sec) {
         m_shape.move(sec * m_velocity * static_cast<float>(m_dir), 0.0f);
     else
         attack(sec);
-    m_healthBar.update(m_shape.getPosition(), m_health/MAX_HEALTH);
+    m_healthBar.update(m_shape.getPosition(), m_health/m_maxHealth);
 }
 void Soldier::takeDamage(float amount) {
     m_health -= amount;
@@ -42,9 +45,8 @@ void Soldier::takeDamage(float amount) {
 
 sf::FloatRect Soldier::getAttackBounds() const {
     sf::FloatRect b = m_shape.getGlobalBounds();
-    if (m_team == Home)
-        b.left += m_attackRange;
-    else
+    b.width += m_attackRange;
+    if (m_team == Away)
         b.left -= m_attackRange;
     return b;
 }
@@ -66,4 +68,16 @@ void Soldier::clearTarget() {
 void Soldier::attack(float dt) const {
     if (!m_target.expired())
         m_target.lock()->takeDamage(m_power*dt);
+}
+
+float Soldier::soldierPrice(Type soldierType) {
+    switch (soldierType) {
+        case Cow:
+            return 5.0f;
+        case Goat:
+            return 3.0f;
+        case Chicken:
+            return 2.0f;
+    }
+    return 0;
 }
